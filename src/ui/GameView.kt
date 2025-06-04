@@ -3,16 +3,17 @@ package ui
 import controller.GameController
 import javafx.application.Platform
 import javafx.geometry.Insets
+import javafx.geometry.Pos
+import javafx.scene.Scene
 import javafx.scene.control.Alert
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.GridPane
+import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
 import model.Card
-import model.Difficulty
-import model.GameMode
 import model.PlayerType
 
 class GameView(
@@ -25,12 +26,35 @@ class GameView(
 
     private val turnLabel = Label()
     private val scoreLabel = Label()
+    private val abandonButton = Button("Abandonar Partida")
 
     init {
-        val topPanel = VBox(10.0, turnLabel, scoreLabel)
-        topPanel.padding = Insets(10.0)
+        // 🟦 Painel Superior com Labels + Botão Abandonar
+        val topPanel = VBox(10.0).apply {
+            padding = Insets(10.0)
+            children.addAll(
+                HBox(20.0, turnLabel, scoreLabel).apply { alignment = Pos.CENTER },
+                abandonButton.apply {
+                    setOnAction {
+                        val confirmation = Alert(Alert.AlertType.CONFIRMATION).apply {
+                            title = "Confirmar Abandono"
+                            headerText = "Tem certeza que deseja abandonar a partida?"
+                            contentText = "Seu progresso atual será perdido."
+                        }
+
+                        val result = confirmation.showAndWait()
+                        if (result.isPresent && result.get().buttonData.isDefaultButton) {
+                            val menu = MenuView(stage)
+                            stage.scene = Scene(menu, 800.0, 600.0)
+                        }
+                    }
+                }
+
+            )
+        }
         top = topPanel
 
+        // 🟩 Grade do Tabuleiro
         val grid = GridPane().apply {
             hgap = 10.0
             vgap = 10.0
@@ -81,9 +105,7 @@ class GameView(
         Thread {
             Thread.sleep(1000)
             controller.playMachineTurn()
-            Platform.runLater {
-                updateView()
-            }
+            Platform.runLater { updateView() }
 
             Thread.sleep(1000)
             Platform.runLater {
@@ -134,10 +156,9 @@ class GameView(
 
             alert.showAndWait()
 
-            // 👉 Volta ao menu
-            val menu = ui.MenuView(stage)
-            stage.scene = javafx.scene.Scene(menu, 800.0, 600.0)
+            // Volta ao menu após fim de jogo
+            val menu = MenuView(stage)
+            stage.scene = Scene(menu, 800.0, 600.0)
         }
     }
-
 }
