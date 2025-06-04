@@ -3,14 +3,13 @@ package ui
 import controller.GameController
 import javafx.application.Platform
 import javafx.geometry.Insets
-import javafx.geometry.Pos
-import javafx.scene.Scene
 import javafx.scene.control.Alert
 import javafx.scene.control.Button
 import javafx.scene.control.Label
+import javafx.scene.image.Image
+import javafx.scene.image.ImageView
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.GridPane
-import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
 import model.Card
@@ -29,32 +28,10 @@ class GameView(
     private val abandonButton = Button("Abandonar Partida")
 
     init {
-        // 🟦 Painel Superior com Labels + Botão Abandonar
-        val topPanel = VBox(10.0).apply {
-            padding = Insets(10.0)
-            children.addAll(
-                HBox(20.0, turnLabel, scoreLabel).apply { alignment = Pos.CENTER },
-                abandonButton.apply {
-                    setOnAction {
-                        val confirmation = Alert(Alert.AlertType.CONFIRMATION).apply {
-                            title = "Confirmar Abandono"
-                            headerText = "Tem certeza que deseja abandonar a partida?"
-                            contentText = "Seu progresso atual será perdido."
-                        }
-
-                        val result = confirmation.showAndWait()
-                        if (result.isPresent && result.get().buttonData.isDefaultButton) {
-                            val menu = MenuView(stage)
-                            stage.scene = Scene(menu, 800.0, 600.0)
-                        }
-                    }
-                }
-
-            )
-        }
+        val topPanel = VBox(10.0, turnLabel, scoreLabel, abandonButton)
+        topPanel.padding = Insets(10.0)
         top = topPanel
 
-        // 🟩 Grade do Tabuleiro
         val grid = GridPane().apply {
             hgap = 10.0
             vgap = 10.0
@@ -63,7 +40,7 @@ class GameView(
 
         val cols = 6
         controller.cards.forEachIndexed { index, card ->
-            val button = Button("❓").apply {
+            val button = Button().apply {
                 minWidth = 80.0
                 minHeight = 80.0
                 setOnAction {
@@ -83,8 +60,23 @@ class GameView(
             grid.add(button, col, row)
         }
 
+        abandonButton.setOnAction {
+            val confirm = Alert(Alert.AlertType.CONFIRMATION).apply {
+                title = "Confirmar Abandono"
+                headerText = "Tem certeza que deseja abandonar a partida?"
+                contentText = "Seu progresso será perdido."
+            }
+
+            val result = confirm.showAndWait()
+            if (result.isPresent && result.get().buttonData.isDefaultButton) {
+                val menu = MenuView(stage)
+                stage.scene = javafx.scene.Scene(menu, 800.0, 600.0)
+            }
+        }
+
         center = grid
         updateLabels()
+        updateView()
     }
 
     private fun handlePostTurn() {
@@ -105,7 +97,9 @@ class GameView(
         Thread {
             Thread.sleep(1000)
             controller.playMachineTurn()
-            Platform.runLater { updateView() }
+            Platform.runLater {
+                updateView()
+            }
 
             Thread.sleep(1000)
             Platform.runLater {
@@ -118,22 +112,35 @@ class GameView(
 
     private fun updateView() {
         buttons.forEach { (card, button) ->
-            button.text = if (card.isMatched || card.isRevealed) card.symbol else "❓"
-            button.isDisable = card.isMatched
-            button.style = when {
-                card.isMatchedBy == PlayerType.HUMAN -> "-fx-border-color: blue; -fx-border-width: 3px;"
-                card.isMatchedBy == PlayerType.MACHINE -> "-fx-border-color: red; -fx-border-width: 3px;"
-                card.isRevealed -> when (controller.currentPlayer) {
-                    PlayerType.HUMAN -> "-fx-border-color: blue; -fx-border-width: 3px;"
-                    PlayerType.MACHINE -> "-fx-border-color: red; -fx-border-width: 3px;"
+            if (card.isMatched || card.isRevealed) {
+                val image = loadImageForSymbol(card.symbol)
+                val imageView = ImageView(image).apply {
+                    fitWidth = 60.0
+                    fitHeight = 60.0
+                    isPreserveRatio = true
                 }
-                else -> ""
+                button.graphic = imageView
+            } else {
+                button.graphic = null
+                button.text = "❓"
             }
+            button.isDisable = card.isMatched
         }
 
         updateLabels()
         checkGameEnd()
     }
+    private fun loadImageForSymbol(symbol: String): Image {
+        val path = "/images/${symbol.lowercase()}.png"
+        val stream = javaClass.getResourceAsStream(path)
+        return if (stream != null) {
+            Image(stream)
+        } else {
+            println("⚠️ Imagem não encontrada: $path")
+            Image(javaClass.getResourceAsStream("/imagens/default.png")) // opcional
+        }
+    }
+
 
     private fun updateLabels() {
         turnLabel.text = "Vez do Jogador: ${if (controller.currentPlayer == PlayerType.HUMAN) "Humano" else "Máquina"}"
@@ -156,9 +163,8 @@ class GameView(
 
             alert.showAndWait()
 
-            // Volta ao menu após fim de jogo
             val menu = MenuView(stage)
-            stage.scene = Scene(menu, 800.0, 600.0)
+            stage.scene = javafx.scene.Scene(menu, 800.0, 600.0)
         }
     }
 }
