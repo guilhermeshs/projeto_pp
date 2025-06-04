@@ -1,4 +1,6 @@
 package model
 
-class GameMode {
+enum class GameMode {
+    COMPETITIVE,
+    COOPERATIVE
 }

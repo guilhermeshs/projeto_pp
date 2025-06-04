@@ -1,4 +1,5 @@
 package model
 
-class Difficulty {
+enum class Difficulty {
+    EASY, MEDIUM, HARD, EXTREME
 }

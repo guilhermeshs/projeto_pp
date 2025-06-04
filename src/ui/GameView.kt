@@ -3,21 +3,25 @@ package ui
 import controller.GameController
 import javafx.application.Platform
 import javafx.geometry.Insets
+import javafx.scene.control.Alert
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.VBox
+import javafx.stage.Stage
 import model.Card
+import model.Difficulty
+import model.GameMode
 import model.PlayerType
 
-class GameView : BorderPane() {
+class GameView(
+    private val controller: GameController,
+    private val stage: Stage
+) : BorderPane() {
 
-    private val rows = 6
-    private val cols = 4
-    private val controller = GameController(rows * cols)
-    private var isProcessing = false
     private val buttons = mutableMapOf<Card, Button>()
+    private var isProcessing = false
 
     private val turnLabel = Label()
     private val scoreLabel = Label()
@@ -33,6 +37,7 @@ class GameView : BorderPane() {
             padding = Insets(20.0)
         }
 
+        val cols = 6
         controller.cards.forEachIndexed { index, card ->
             val button = Button("❓").apply {
                 minWidth = 80.0
@@ -41,7 +46,6 @@ class GameView : BorderPane() {
                     if (isProcessing || controller.isMachineTurn()) return@setOnAction
                     if (controller.revealCard(card)) {
                         updateView()
-
                         if (controller.shouldHideCards()) {
                             handlePostTurn()
                         }
@@ -61,36 +65,27 @@ class GameView : BorderPane() {
 
     private fun handlePostTurn() {
         isProcessing = true
-
         Thread {
             Thread.sleep(1000)
-
             Platform.runLater {
                 controller.hideUnmatched()
                 updateView()
                 isProcessing = false
-
-                if (controller.isMachineTurn()) {
-                    handleMachineTurn()
-                }
+                if (controller.isMachineTurn()) handleMachineTurn()
             }
         }.start()
     }
 
     private fun handleMachineTurn() {
         isProcessing = true
-
         Thread {
             Thread.sleep(1000)
-
-            val selected = controller.playMachineTurn()
-
+            controller.playMachineTurn()
             Platform.runLater {
                 updateView()
             }
 
             Thread.sleep(1000)
-
             Platform.runLater {
                 controller.hideUnmatched()
                 updateView()
@@ -101,13 +96,8 @@ class GameView : BorderPane() {
 
     private fun updateView() {
         buttons.forEach { (card, button) ->
-            // Define o texto da carta
             button.text = if (card.isMatched || card.isRevealed) card.symbol else "❓"
-
-            // Desabilita carta se já combinada
             button.isDisable = card.isMatched
-
-            // Estilo da borda:
             button.style = when {
                 card.isMatchedBy == PlayerType.HUMAN -> "-fx-border-color: blue; -fx-border-width: 3px;"
                 card.isMatchedBy == PlayerType.MACHINE -> "-fx-border-color: red; -fx-border-width: 3px;"
@@ -123,6 +113,11 @@ class GameView : BorderPane() {
         checkGameEnd()
     }
 
+    private fun updateLabels() {
+        turnLabel.text = "Vez do Jogador: ${if (controller.currentPlayer == PlayerType.HUMAN) "Humano" else "Máquina"}"
+        scoreLabel.text = "Pontuação - Humano: ${controller.humanScore}  |  Máquina: ${controller.machineScore}"
+    }
+
     private fun checkGameEnd() {
         if (controller.isGameOver()) {
             val winner = when {
@@ -131,18 +126,18 @@ class GameView : BorderPane() {
                 else -> "Empate! 😐"
             }
 
-            val alert = javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION)
-            alert.title = "Fim de Jogo"
-            alert.headerText = winner
-            alert.contentText = "Placar final:\nHumano: ${controller.humanScore}\nMáquina: ${controller.machineScore}"
+            val alert = Alert(Alert.AlertType.INFORMATION).apply {
+                title = "Fim de Jogo"
+                headerText = winner
+                contentText = "Placar final:\nHumano: ${controller.humanScore}  |  Máquina: ${controller.machineScore}"
+            }
+
             alert.showAndWait()
+
+            // 👉 Volta ao menu
+            val menu = ui.MenuView(stage)
+            stage.scene = javafx.scene.Scene(menu, 800.0, 600.0)
         }
     }
 
-
-
-    private fun updateLabels() {
-        turnLabel.text = "Vez do Jogador: ${if (controller.currentPlayer == PlayerType.HUMAN) "Humano" else "Máquina"}"
-        scoreLabel.text = "Pontuação - Humano: ${controller.humanScore}  |  Máquina: ${controller.machineScore}"
-    }
 }
