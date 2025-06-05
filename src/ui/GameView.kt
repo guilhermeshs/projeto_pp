@@ -120,16 +120,26 @@ class GameView(
                     isPreserveRatio = true
                 }
                 button.graphic = imageView
+                button.text = "" // remove o ❓ se a carta está visível
             } else {
                 button.graphic = null
                 button.text = "❓"
             }
+
+            // Estilo de borda com base no jogador que combinou a carta
+            button.style = when (card.isMatchedBy) {
+                PlayerType.HUMAN -> "-fx-border-color: blue; -fx-border-width: 3;"
+                PlayerType.MACHINE -> "-fx-border-color: red; -fx-border-width: 3;"
+                else -> "-fx-border-color: transparent;"
+            }
+
             button.isDisable = card.isMatched
         }
 
         updateLabels()
         checkGameEnd()
     }
+
     private fun loadImageForSymbol(symbol: String): Image {
         val path = "/images/${symbol.lowercase()}.png"
         val stream = javaClass.getResourceAsStream(path)
