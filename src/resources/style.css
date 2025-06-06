@@ -1,0 +1,41 @@
+/* Borda padrão para cartas */
+.card-button {
+    -fx-pref-width: 100px;
+    -fx-pref-height: 100px;
+    -fx-font-size: 24px;
+    -fx-alignment: center;
+    -fx-content-display: center;
+    -fx-background-color: #f5f5f5;        /* tom suave */
+    -fx-border-color: grey;
+    -fx-border-width: 1px;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 2, 2);
+}
+
+/* Competitivo */
+.human-border {
+    -fx-border-color: blue;
+    -fx-border-width: 2;
+}
+
+.machine-border {
+    -fx-border-color: red;
+    -fx-border-width: 2;
+}
+
+/* Cooperativo */
+.human-coop-border {
+    -fx-border-color: #00e600; /* verde claro */
+    -fx-border-width: 2;
+}
+
+.machine-coop-border {
+    -fx-border-color:  #ff80d5;
+    -fx-border-width: 2;
+}
+
+.card-button:hover {
+    -fx-background-color: #e0e0e0;
+    -fx-cursor: hand;
+}

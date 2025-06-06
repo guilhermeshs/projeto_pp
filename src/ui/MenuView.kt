@@ -2,7 +2,6 @@ package ui
 
 import controller.GameController
 import javafx.geometry.Pos
-import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.Button
 import javafx.scene.control.ComboBox
@@ -30,14 +29,12 @@ class MenuView(private val stage: Stage) : VBox() {
             startButton
         )
 
-        // Preencher seletores
         modeSelector.items.addAll(GameMode.values())
         modeSelector.selectionModel.selectFirst()
 
         difficultySelector.items.addAll(Difficulty.values())
         difficultySelector.selectionModel.selectFirst()
 
-        // Ação do botão
         startButton.setOnAction {
             val selectedMode = modeSelector.value
             val selectedDifficulty = difficultySelector.value
@@ -45,6 +42,7 @@ class MenuView(private val stage: Stage) : VBox() {
             val controller = GameController(selectedMode, selectedDifficulty)
             val gameView = GameView(controller, stage)
             val scene = Scene(gameView, 800.0, 600.0)
+            scene.stylesheets.add(javaClass.getResource("/style.css")!!.toExternalForm())
             stage.scene = scene
         }
     }

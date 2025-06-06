@@ -76,6 +76,7 @@ class GameView(
             if (result.isPresent && result.get().buttonData.isDefaultButton) {
                 val menu = MenuView(stage)
                 stage.scene = javafx.scene.Scene(menu, 800.0, 600.0)
+                scene.stylesheets.add(javaClass.getResource("/style.css")!!.toExternalForm()) // <-- adicionar isso
             }
         }
 
@@ -179,10 +180,24 @@ class GameView(
                 button.text = "❓"
             }
 
-            button.style = when (card.isMatchedBy) {
-                PlayerType.HUMAN -> "-fx-border-color: blue; -fx-border-width: 3;"
-                PlayerType.MACHINE -> "-fx-border-color: red; -fx-border-width: 3;"
-                else -> "-fx-border-color: transparent;"
+            // Limpa classes anteriores e aplica padrão
+            button.styleClass.setAll("card-button")
+
+            // Define classe de borda com base no modo e jogador
+            when (card.isMatchedBy) {
+                PlayerType.HUMAN -> {
+                    if (controller.mode == GameMode.COOPERATIVE)
+                        button.styleClass.add("human-coop-border")
+                    else
+                        button.styleClass.add("human-border")
+                }
+                PlayerType.MACHINE -> {
+                    if (controller.mode == GameMode.COOPERATIVE)
+                        button.styleClass.add("machine-coop-border")
+                    else
+                        button.styleClass.add("machine-border")
+                }
+                else -> {} // sem borda
             }
 
             button.isDisable = card.isMatched
@@ -191,6 +206,8 @@ class GameView(
         updateLabels()
         checkGameEnd()
     }
+
+
 
     private fun loadImageForSymbol(symbol: String): Image {
         val path = "/images/${symbol.lowercase()}.png"
