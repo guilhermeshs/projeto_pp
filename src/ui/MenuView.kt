@@ -41,7 +41,7 @@ class MenuView(private val stage: Stage) : VBox() {
 
             val controller = GameController(selectedMode, selectedDifficulty)
             val gameView = GameView(controller, stage)
-            val scene = Scene(gameView, 800.0, 600.0)
+            val scene = Scene(gameView, 1280.0, 720.0)
             scene.stylesheets.add(javaClass.getResource("/style.css")!!.toExternalForm())
             stage.scene = scene
         }

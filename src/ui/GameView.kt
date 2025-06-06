@@ -75,7 +75,7 @@ class GameView(
             val result = confirm.showAndWait()
             if (result.isPresent && result.get().buttonData.isDefaultButton) {
                 val menu = MenuView(stage)
-                stage.scene = javafx.scene.Scene(menu, 800.0, 600.0)
+                stage.scene = javafx.scene.Scene(menu, 1280.0, 720.0)
                 scene.stylesheets.add(javaClass.getResource("/style.css")!!.toExternalForm()) // <-- adicionar isso
             }
         }
