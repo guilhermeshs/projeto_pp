@@ -7,7 +7,7 @@ import model.PlayerType
 import kotlin.random.Random
 
 class GameController(
-    private val mode: GameMode,
+    val mode: GameMode,
     private val difficulty: Difficulty
 ) {
     val cards: List<Card>
@@ -102,10 +102,9 @@ class GameController(
     }
 
     private fun switchTurn() {
-        if (mode == GameMode.COMPETITIVE) {
-            currentPlayer = if (currentPlayer == PlayerType.HUMAN) PlayerType.MACHINE else PlayerType.HUMAN
-        }
+        currentPlayer = if (currentPlayer == PlayerType.HUMAN) PlayerType.MACHINE else PlayerType.HUMAN
     }
+
 
     fun isMachineTurn(): Boolean = mode == GameMode.COMPETITIVE && currentPlayer == PlayerType.MACHINE
 

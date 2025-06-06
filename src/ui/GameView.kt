@@ -13,6 +13,7 @@ import javafx.scene.layout.GridPane
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
 import model.Card
+import model.GameMode
 import model.PlayerType
 
 class GameView(
@@ -25,10 +26,14 @@ class GameView(
 
     private val turnLabel = Label()
     private val scoreLabel = Label()
+    private val timeLabel = Label("Tempo restante: 03:00")
     private val abandonButton = Button("Abandonar Partida")
 
+    private var timeLeftInSeconds = 180
+    private var timerThread: Thread? = null
+
     init {
-        val topPanel = VBox(10.0, turnLabel, scoreLabel, abandonButton)
+        val topPanel = VBox(10.0, turnLabel, scoreLabel, timeLabel, abandonButton)
         topPanel.padding = Insets(10.0)
         top = topPanel
 
@@ -77,6 +82,48 @@ class GameView(
         center = grid
         updateLabels()
         updateView()
+
+        if (controller.mode == GameMode.COOPERATIVE) {
+            startTimer()
+        }
+    }
+
+    private fun startTimer() {
+        timerThread = Thread {
+            while (timeLeftInSeconds > 0 && !controller.isGameOver()) {
+                Thread.sleep(1000)
+                timeLeftInSeconds--
+
+                Platform.runLater {
+                    updateTimeLabel()
+                }
+            }
+
+            if (!controller.isGameOver()) {
+                Platform.runLater {
+                    showTimeOverAlert()
+                }
+            }
+        }
+        timerThread?.start()
+    }
+
+    private fun updateTimeLabel() {
+        val minutes = timeLeftInSeconds / 60
+        val seconds = timeLeftInSeconds % 60
+        timeLabel.text = "Tempo restante: %02d:%02d".format(minutes, seconds)
+    }
+
+    private fun showTimeOverAlert() {
+        val alert = Alert(Alert.AlertType.INFORMATION).apply {
+            title = "Tempo Esgotado"
+            headerText = "Você perdeu! 😢"
+            contentText = "O tempo acabou antes de revelar todas as cartas."
+        }
+        alert.showAndWait()
+
+        val menu = MenuView(stage)
+        stage.scene = javafx.scene.Scene(menu, 800.0, 600.0)
     }
 
     private fun handlePostTurn() {
@@ -87,7 +134,13 @@ class GameView(
                 controller.hideUnmatched()
                 updateView()
                 isProcessing = false
-                if (controller.isMachineTurn()) handleMachineTurn()
+
+                // Se modo cooperativo, força a máquina a jogar em seguida
+                if (controller.mode == GameMode.COOPERATIVE && controller.currentPlayer == PlayerType.MACHINE) {
+                    handleMachineTurn()
+                } else if (controller.isMachineTurn()) {
+                    handleMachineTurn()
+                }
             }
         }.start()
     }
@@ -120,13 +173,12 @@ class GameView(
                     isPreserveRatio = true
                 }
                 button.graphic = imageView
-                button.text = "" // remove o ❓ se a carta está visível
+                button.text = ""
             } else {
                 button.graphic = null
                 button.text = "❓"
             }
 
-            // Estilo de borda com base no jogador que combinou a carta
             button.style = when (card.isMatchedBy) {
                 PlayerType.HUMAN -> "-fx-border-color: blue; -fx-border-width: 3;"
                 PlayerType.MACHINE -> "-fx-border-color: red; -fx-border-width: 3;"
@@ -147,10 +199,9 @@ class GameView(
             Image(stream)
         } else {
             println("⚠️ Imagem não encontrada: $path")
-            Image(javaClass.getResourceAsStream("/imagens/default.png")) // opcional
+            Image(javaClass.getResourceAsStream("/imagens/default.png"))
         }
     }
-
 
     private fun updateLabels() {
         turnLabel.text = "Vez do Jogador: ${if (controller.currentPlayer == PlayerType.HUMAN) "Humano" else "Máquina"}"
@@ -159,10 +210,15 @@ class GameView(
 
     private fun checkGameEnd() {
         if (controller.isGameOver()) {
-            val winner = when {
-                controller.humanScore > controller.machineScore -> "Você venceu! 🎉"
-                controller.machineScore > controller.humanScore -> "A máquina venceu! 🤖"
-                else -> "Empate! 😐"
+            timerThread?.interrupt() // Para o cronômetro se vencer antes do tempo acabar
+
+            val winner = when (controller.mode) {
+                GameMode.COMPETITIVE -> when {
+                    controller.humanScore > controller.machineScore -> "Você venceu! 🎉"
+                    controller.machineScore > controller.humanScore -> "A máquina venceu! 🤖"
+                    else -> "Empate! 😐"
+                }
+                GameMode.COOPERATIVE -> "Parabéns! Vocês venceram juntos! 🎉"
             }
 
             val alert = Alert(Alert.AlertType.INFORMATION).apply {
