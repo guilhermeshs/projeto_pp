@@ -5,6 +5,8 @@ import javafx.scene.media.MediaPlayer
 
 object SoundManager {
     private var mediaPlayer: MediaPlayer? = null
+    var isMuted: Boolean = false
+        private set
 
     fun play(path: String, loop: Boolean = true) {
         stop()
@@ -12,6 +14,7 @@ object SoundManager {
             ?: throw IllegalArgumentException("Recurso de áudio não encontrado: $path")
         val media = Media(resource.toString())
         mediaPlayer = MediaPlayer(media).apply {
+            isMute = isMuted
             if (loop) {
                 cycleCount = MediaPlayer.INDEFINITE
             }
@@ -22,5 +25,10 @@ object SoundManager {
     fun stop() {
         mediaPlayer?.stop()
         mediaPlayer = null
+    }
+
+    fun toggleMute() {
+        isMuted = !isMuted
+        mediaPlayer?.isMute = isMuted
     }
 }

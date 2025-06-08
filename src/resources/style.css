@@ -39,3 +39,25 @@
     -fx-background-color: #e0e0e0;
     -fx-cursor: hand;
 }
+
+.mute-button {
+    -fx-font-size: 12px;              /* tamanho da fonte menor */
+    -fx-padding: 4px 8px;             /* menos espaço interno */
+    -fx-background-color: #444;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #888;
+    -fx-border-width: 1.5px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 3, 0, 1, 1);
+}
+
+.mute-button:hover {
+    -fx-background-color: #666;
+    -fx-border-color: #ccc;
+    -fx-text-fill: #ffe066;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+

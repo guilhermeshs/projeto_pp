@@ -19,16 +19,20 @@ class MenuView(private val stage: Stage) : VBox() {
     private val startButton = Button("Iniciar Jogo")
 
     init {
+
         SoundManager.play("/sounds/menu.mp3")
         spacing = 20.0
         alignment = Pos.CENTER
+
+        val muteButton = createMuteButton()
 
         children.addAll(
             Label("Modo de Jogo:"),
             modeSelector,
             Label("Nível de Dificuldade:"),
             difficultySelector,
-            startButton
+            startButton,
+            muteButton
         )
 
         modeSelector.items.addAll(GameMode.values())

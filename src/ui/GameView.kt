@@ -17,6 +17,8 @@ import model.GameMode
 import model.PlayerType
 import controller.GameTimer
 import controller.SoundManager
+import util.createStyledScene
+
 
 class GameView(
     private val controller: GameController,
@@ -48,8 +50,11 @@ class GameView(
 
         val selected = musicOptions.random()
         SoundManager.play(selected)
-        val topPanel = VBox(10.0, turnLabel, scoreLabel, timeLabel, abandonButton)
+        val muteButton = createMuteButton()
+        val topPanel = VBox(10.0, turnLabel, scoreLabel, timeLabel, abandonButton, muteButton)
         topPanel.padding = Insets(10.0)
+        top = topPanel
+
 
         if (controller.mode == GameMode.COMPETITIVE) {
             timeLabel.isVisible = false
@@ -96,7 +101,7 @@ class GameView(
             if (result.isPresent && result.get().buttonData.isDefaultButton) {
                 gameTimer?.stop()
                 val menu = MenuView(stage)
-                stage.scene = javafx.scene.Scene(menu, 1280.0, 720.0)
+                stage.scene = createStyledScene(menu, 1280.0, 720.0)
                 scene.stylesheets.add(javaClass.getResource("/style.css")!!.toExternalForm())
             }
         }
@@ -122,7 +127,8 @@ class GameView(
         alert.showAndWait()
 
         val menu = MenuView(stage)
-        stage.scene = javafx.scene.Scene(menu, 800.0, 600.0)
+        stage.scene = createStyledScene(menu, 1280.0, 720.0)
+
     }
 
     private fun handlePostTurn() {
@@ -246,7 +252,7 @@ class GameView(
             alert.showAndWait()
 
             val menu = MenuView(stage)
-            stage.scene = javafx.scene.Scene(menu, 800.0, 600.0)
+            stage.scene = createStyledScene(menu, 1280.0, 720.0)
         }
     }
 }
