@@ -2,5 +2,6 @@ package model
 
 enum class GameMode {
     COMPETITIVE,
-    COOPERATIVE
+    COOPERATIVE,
+    ZEN
 }

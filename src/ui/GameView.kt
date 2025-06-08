@@ -15,6 +15,8 @@ import javafx.stage.Stage
 import model.Card
 import model.GameMode
 import model.PlayerType
+import controller.GameTimer
+import controller.SoundManager
 
 class GameView(
     private val controller: GameController,
@@ -29,18 +31,28 @@ class GameView(
     private val timeLabel = Label()
     private val abandonButton = Button("Abandonar Partida")
 
-    private var timeLeftInSeconds = if (controller.mode == GameMode.COOPERATIVE) 300 else 0
-    private var timerThread: Thread? = null
+    private var gameTimer: GameTimer? = null
 
     init {
+
+        SoundManager.stop()
+
+        val musicOptions = when (controller.mode) {
+            GameMode.COMPETITIVE -> listOf("/sounds/comp1.mp3", "/sounds/comp2.mp3")
+            GameMode.COOPERATIVE -> listOf("/sounds/coop1.mp3", "/sounds/coop2.mp3")
+            GameMode.ZEN -> listOf("/sounds/zen.mp3")
+        }
+        if (controller.mode != GameMode.COOPERATIVE) {
+            timeLabel.isVisible = false
+        }
+
+        val selected = musicOptions.random()
+        SoundManager.play(selected)
         val topPanel = VBox(10.0, turnLabel, scoreLabel, timeLabel, abandonButton)
         topPanel.padding = Insets(10.0)
 
-        // Oculta cronômetro no modo competitivo
         if (controller.mode == GameMode.COMPETITIVE) {
             timeLabel.isVisible = false
-        } else {
-            updateTimeLabel() // Inicializa label com 05:00
         }
 
         top = topPanel
@@ -82,6 +94,7 @@ class GameView(
 
             val result = confirm.showAndWait()
             if (result.isPresent && result.get().buttonData.isDefaultButton) {
+                gameTimer?.stop()
                 val menu = MenuView(stage)
                 stage.scene = javafx.scene.Scene(menu, 1280.0, 720.0)
                 scene.stylesheets.add(javaClass.getResource("/style.css")!!.toExternalForm())
@@ -93,34 +106,11 @@ class GameView(
         updateView()
 
         if (controller.mode == GameMode.COOPERATIVE) {
-            startTimer()
-        }
-    }
-
-    private fun startTimer() {
-        timerThread = Thread {
-            while (timeLeftInSeconds > 0 && !controller.isGameOver()) {
-                Thread.sleep(1000)
-                timeLeftInSeconds--
-
-                Platform.runLater {
-                    updateTimeLabel()
-                }
+            gameTimer = GameTimer(300, timeLabel) {
+                showTimeOverAlert()
             }
-
-            if (!controller.isGameOver()) {
-                Platform.runLater {
-                    showTimeOverAlert()
-                }
-            }
+            gameTimer?.start()
         }
-        timerThread?.start()
-    }
-
-    private fun updateTimeLabel() {
-        val minutes = timeLeftInSeconds / 60
-        val seconds = timeLeftInSeconds % 60
-        timeLabel.text = "Tempo restante: %02d:%02d".format(minutes, seconds)
     }
 
     private fun showTimeOverAlert() {
@@ -224,13 +214,18 @@ class GameView(
     }
 
     private fun updateLabels() {
-        turnLabel.text = "Vez do Jogador: ${if (controller.currentPlayer == PlayerType.HUMAN) "Humano" else "Máquina"}"
-        scoreLabel.text = "Pontuação - Humano: ${controller.humanScore}  |  Máquina: ${controller.machineScore}"
+        if (controller.mode == GameMode.ZEN) {
+            turnLabel.text = "Modo Zen - Aproveite o jogo!"
+            scoreLabel.text = "Cartas reveladas: ${controller.humanScore}"
+        } else {
+            turnLabel.text = "Vez do Jogador: ${if (controller.currentPlayer == PlayerType.HUMAN) "Humano" else "Máquina"}"
+            scoreLabel.text = "Pontuação - Humano: ${controller.humanScore}  |  Máquina: ${controller.machineScore}"
+        }
     }
 
     private fun checkGameEnd() {
         if (controller.isGameOver()) {
-            timerThread?.interrupt()
+            gameTimer?.stop()
 
             val winner = when (controller.mode) {
                 GameMode.COMPETITIVE -> when {
@@ -239,6 +234,7 @@ class GameView(
                     else -> "Empate! 😐"
                 }
                 GameMode.COOPERATIVE -> "Parabéns! Vocês venceram juntos! 🎉"
+                GameMode.ZEN -> "Parabéns!"
             }
 
             val alert = Alert(Alert.AlertType.INFORMATION).apply {

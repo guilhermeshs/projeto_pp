@@ -10,6 +10,7 @@ import javafx.scene.layout.VBox
 import javafx.stage.Stage
 import model.Difficulty
 import model.GameMode
+import controller.SoundManager
 
 class MenuView(private val stage: Stage) : VBox() {
 
@@ -18,6 +19,7 @@ class MenuView(private val stage: Stage) : VBox() {
     private val startButton = Button("Iniciar Jogo")
 
     init {
+        SoundManager.play("/sounds/menu.mp3")
         spacing = 20.0
         alignment = Pos.CENTER
 

@@ -102,8 +102,10 @@ class GameController(
     }
 
     private fun switchTurn() {
+        if (mode == GameMode.ZEN) return
         currentPlayer = if (currentPlayer == PlayerType.HUMAN) PlayerType.MACHINE else PlayerType.HUMAN
     }
+
 
 
     fun isMachineTurn(): Boolean = mode == GameMode.COMPETITIVE && currentPlayer == PlayerType.MACHINE
