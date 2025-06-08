@@ -26,15 +26,23 @@ class GameView(
 
     private val turnLabel = Label()
     private val scoreLabel = Label()
-    private val timeLabel = Label("Tempo restante: 03:00")
+    private val timeLabel = Label()
     private val abandonButton = Button("Abandonar Partida")
 
-    private var timeLeftInSeconds = 180
+    private var timeLeftInSeconds = if (controller.mode == GameMode.COOPERATIVE) 300 else 0
     private var timerThread: Thread? = null
 
     init {
         val topPanel = VBox(10.0, turnLabel, scoreLabel, timeLabel, abandonButton)
         topPanel.padding = Insets(10.0)
+
+        // Oculta cronômetro no modo competitivo
+        if (controller.mode == GameMode.COMPETITIVE) {
+            timeLabel.isVisible = false
+        } else {
+            updateTimeLabel() // Inicializa label com 05:00
+        }
+
         top = topPanel
 
         val grid = GridPane().apply {
@@ -76,7 +84,7 @@ class GameView(
             if (result.isPresent && result.get().buttonData.isDefaultButton) {
                 val menu = MenuView(stage)
                 stage.scene = javafx.scene.Scene(menu, 1280.0, 720.0)
-                scene.stylesheets.add(javaClass.getResource("/style.css")!!.toExternalForm()) // <-- adicionar isso
+                scene.stylesheets.add(javaClass.getResource("/style.css")!!.toExternalForm())
             }
         }
 
@@ -136,7 +144,6 @@ class GameView(
                 updateView()
                 isProcessing = false
 
-                // Se modo cooperativo, força a máquina a jogar em seguida
                 if (controller.mode == GameMode.COOPERATIVE && controller.currentPlayer == PlayerType.MACHINE) {
                     handleMachineTurn()
                 } else if (controller.isMachineTurn()) {
@@ -180,10 +187,8 @@ class GameView(
                 button.text = "❓"
             }
 
-            // Limpa classes anteriores e aplica padrão
             button.styleClass.setAll("card-button")
 
-            // Define classe de borda com base no modo e jogador
             when (card.isMatchedBy) {
                 PlayerType.HUMAN -> {
                     if (controller.mode == GameMode.COOPERATIVE)
@@ -197,7 +202,7 @@ class GameView(
                     else
                         button.styleClass.add("machine-border")
                 }
-                else -> {} // sem borda
+                else -> {}
             }
 
             button.isDisable = card.isMatched
@@ -206,8 +211,6 @@ class GameView(
         updateLabels()
         checkGameEnd()
     }
-
-
 
     private fun loadImageForSymbol(symbol: String): Image {
         val path = "/images/${symbol.lowercase()}.png"
@@ -227,7 +230,7 @@ class GameView(
 
     private fun checkGameEnd() {
         if (controller.isGameOver()) {
-            timerThread?.interrupt() // Para o cronômetro se vencer antes do tempo acabar
+            timerThread?.interrupt()
 
             val winner = when (controller.mode) {
                 GameMode.COMPETITIVE -> when {
