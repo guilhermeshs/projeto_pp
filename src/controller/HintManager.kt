@@ -7,6 +7,21 @@ import kotlin.random.Random
 
 class HintManager(private val controller: GameController, difficulty: Difficulty) {
 
+    val symbolToFruit = mapOf(
+        "A" to "maçã",
+        "B" to "banana",
+        "C" to "laranja",
+        "D" to "morango",
+        "E" to "melancia",
+        "F" to "laranjeira",
+        "G" to "tigeja",
+        "H" to "uva",
+        "I" to "limão",
+        "J" to "manga",
+        "K" to "pera",
+        "L" to "abacaxi"
+    )
+
     private val motivationalPhrases = listOf(
         "Continue tentando, você está indo bem!",
         "A memória melhora com prática!",
@@ -50,10 +65,10 @@ class HintManager(private val controller: GameController, difficulty: Difficulty
         val chosen = candidates.random()
         revealedHints[chosen] = chosen.symbol
 
-        showAlert("Dica", "Uma carta foi revelada temporariamente!")
+        val fruitName = symbolToFruit[chosen.symbol] ?: "fruta desconhecida"
+        showAlert("Dica", "Uma carta foi destacada! Ela representa: $fruitName.")
         return true
     }
-
     fun isHinted(card: Card): Boolean {
         return revealedHints.containsKey(card)
     }
