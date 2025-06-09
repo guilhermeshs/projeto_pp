@@ -1,6 +1,7 @@
 package ui
 
 import controller.GameController
+import controller.HintManager
 import javafx.application.Platform
 import javafx.geometry.Insets
 import javafx.scene.control.Alert
@@ -19,12 +20,10 @@ import controller.GameTimer
 import controller.SoundManager
 import util.createStyledScene
 
-
 class GameView(
     private val controller: GameController,
     private val stage: Stage,
     private var gameEnded: Boolean = false
-
 ) : BorderPane() {
 
     private val buttons = mutableMapOf<Card, Button>()
@@ -34,11 +33,11 @@ class GameView(
     private val scoreLabel = Label()
     private val timeLabel = Label()
     private val abandonButton = Button("Abandonar Partida")
+    private val hintButton = Button("Pedir Dica")
 
     private var gameTimer: GameTimer? = null
 
     init {
-
         SoundManager.stop()
 
         val musicOptions = when (controller.mode) {
@@ -46,22 +45,23 @@ class GameView(
             GameMode.COOPERATIVE -> listOf("/sounds/coop1.mp3", "/sounds/coop2.mp3")
             GameMode.ZEN -> listOf("/sounds/zen.mp3")
         }
+
         if (controller.mode != GameMode.COOPERATIVE) {
             timeLabel.isVisible = false
         }
 
         val selected = musicOptions.random()
         SoundManager.play(selected)
+
         val muteButton = createMuteButton()
-        val topPanel = VBox(10.0, turnLabel, scoreLabel, timeLabel, abandonButton, muteButton)
-        topPanel.padding = Insets(10.0)
-        top = topPanel
-
-
-        if (controller.mode == GameMode.COMPETITIVE) {
-            timeLabel.isVisible = false
+        hintButton.setOnAction {
+            if (controller.hintManager.useHint()) {
+                updateView()
+            }
         }
 
+        val topPanel = VBox(10.0, turnLabel, scoreLabel, timeLabel, abandonButton, hintButton, muteButton)
+        topPanel.padding = Insets(10.0)
         top = topPanel
 
         val grid = GridPane().apply {
@@ -130,7 +130,6 @@ class GameView(
 
         val menu = MenuView(stage)
         stage.scene = createStyledScene(menu, 1280.0, 720.0)
-
     }
 
     private fun handlePostTurn() {
@@ -203,6 +202,10 @@ class GameView(
                 else -> {}
             }
 
+            if (controller.hintManager.isHinted(card)) {
+                button.styleClass.add("hint-border")
+            }
+
             button.isDisable = card.isMatched
         }
 
@@ -258,5 +261,4 @@ class GameView(
         val menu = MenuView(stage)
         stage.scene = createStyledScene(menu, 1280.0, 720.0)
     }
-
 }

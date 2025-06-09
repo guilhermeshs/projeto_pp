@@ -13,7 +13,7 @@ class GameController(
     val cards: List<Card>
     private val selectedCards = mutableListOf<Card>()
     private val aiPlayer = AIPlayer(difficulty)
-
+    lateinit var hintManager: HintManager
 
     var currentPlayer = PlayerType.HUMAN
         private set
@@ -33,13 +33,14 @@ class GameController(
         }
 
         cards = symbols.shuffled().mapIndexed { index, symbol -> Card(index, symbol) }
+        hintManager = HintManager(this, difficulty)
     }
 
     private fun groupSize(): Int = when (difficulty) {
         Difficulty.EASY -> 2
         Difficulty.MEDIUM -> 3
         Difficulty.HARD -> 4
-        Difficulty.EXTREME -> 1 // para não dividir, já que os grupos são mistos
+        Difficulty.EXTREME -> 1
     }
 
     private fun generateGroups(groupCount: Int, groupSize: Int): List<String> {
@@ -78,7 +79,6 @@ class GameController(
         if (mode != GameMode.ZEN) {
             aiPlayer.observe(card)
         }
-
 
         return true
     }
