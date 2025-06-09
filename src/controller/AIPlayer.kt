@@ -43,11 +43,28 @@ class AIPlayer(difficulty: Difficulty) {
             return
         }
 
+        val symbolToFruit = mapOf(
+            "A" to "maçã",
+            "B" to "banana",
+            "C" to "laranja",
+            "D" to "morango",
+            "E" to "melancia",
+            "F" to "laranjeira",
+            "G" to "tigeja",
+            "H" to "uva",
+            "I" to "limão",
+            "J" to "manga",
+            "K" to "pera",
+            "L" to "abacaxi"
+        )
+
         println("[AI DEBUG] Memória atual da IA:")
         memory.groupBy { it.symbol }.forEach { (symbol, cards) ->
+            val fruta = symbolToFruit[symbol.uppercase()] ?: symbol
             val ids = cards.joinToString { it.id.toString() }
-            println("  Símbolo '$symbol' -> Cartas com IDs: $ids")
+            println("  Fruta '$fruta' -> Cartas com IDs: $ids")
         }
     }
+
 
 }
