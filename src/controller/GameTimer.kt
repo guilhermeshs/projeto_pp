@@ -15,18 +15,23 @@ class GameTimer(
         if (running) return
         running = true
         thread = Thread {
-            while (totalSeconds > 0 && running) {
-                Thread.sleep(1000)
-                totalSeconds--
-                Platform.runLater { updateLabel() }
-            }
+            try {
+                while (totalSeconds > 0 && running) {
+                    Thread.sleep(1000)
+                    totalSeconds--
+                    Platform.runLater { updateLabel() }
+                }
 
-            if (running && totalSeconds == 0) {
-                Platform.runLater { onTimeOver() }
+                if (running && totalSeconds == 0) {
+                    Platform.runLater { onTimeOver() }
+                }
+            } catch (e: InterruptedException) {
+                // Timer foi interrompido — comportamento esperado ao parar o jogo
             }
         }
         thread?.start()
     }
+
 
     private fun updateLabel() {
         val minutes = totalSeconds / 60

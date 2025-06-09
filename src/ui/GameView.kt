@@ -22,7 +22,9 @@ import util.createStyledScene
 
 class GameView(
     private val controller: GameController,
-    private val stage: Stage
+    private val stage: Stage,
+    private var gameEnded: Boolean = false
+
 ) : BorderPane() {
 
     private val buttons = mutableMapOf<Card, Button>()
@@ -230,29 +232,31 @@ class GameView(
     }
 
     private fun checkGameEnd() {
-        if (controller.isGameOver()) {
-            gameTimer?.stop()
+        if (gameEnded || !controller.isGameOver()) return
 
-            val winner = when (controller.mode) {
-                GameMode.COMPETITIVE -> when {
-                    controller.humanScore > controller.machineScore -> "Você venceu! 🎉"
-                    controller.machineScore > controller.humanScore -> "A máquina venceu! 🤖"
-                    else -> "Empate! 😐"
-                }
-                GameMode.COOPERATIVE -> "Parabéns! Vocês venceram juntos! 🎉"
-                GameMode.ZEN -> "Parabéns!"
+        gameEnded = true
+        gameTimer?.stop()
+
+        val winner = when (controller.mode) {
+            GameMode.COMPETITIVE -> when {
+                controller.humanScore > controller.machineScore -> "Você venceu! 🎉"
+                controller.machineScore > controller.humanScore -> "A máquina venceu! 🤖"
+                else -> "Empate! 😐"
             }
-
-            val alert = Alert(Alert.AlertType.INFORMATION).apply {
-                title = "Fim de Jogo"
-                headerText = winner
-                contentText = "Placar final:\nHumano: ${controller.humanScore}  |  Máquina: ${controller.machineScore}"
-            }
-
-            alert.showAndWait()
-
-            val menu = MenuView(stage)
-            stage.scene = createStyledScene(menu, 1280.0, 720.0)
+            GameMode.COOPERATIVE -> "Parabéns! Vocês venceram juntos! 🎉"
+            GameMode.ZEN -> "Parabéns!"
         }
+
+        val alert = Alert(Alert.AlertType.INFORMATION).apply {
+            title = "Fim de Jogo"
+            headerText = winner
+            contentText = "Placar final:\nHumano: ${controller.humanScore}  |  Máquina: ${controller.machineScore}"
+        }
+
+        alert.showAndWait()
+
+        val menu = MenuView(stage)
+        stage.scene = createStyledScene(menu, 1280.0, 720.0)
     }
+
 }
