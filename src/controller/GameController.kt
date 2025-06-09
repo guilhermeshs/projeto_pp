@@ -4,6 +4,7 @@ import model.Card
 import model.Difficulty
 import model.GameMode
 import model.PlayerType
+import kotlin.random.Random
 
 class GameController(
     val mode: GameMode,
@@ -11,7 +12,8 @@ class GameController(
 ) {
     val cards: List<Card>
     private val selectedCards = mutableListOf<Card>()
-    private val memory = mutableMapOf<String, Int>()
+    private val aiPlayer = AIPlayer(difficulty)
+
 
     var currentPlayer = PlayerType.HUMAN
         private set
@@ -24,10 +26,10 @@ class GameController(
 
     init {
         val symbols = when (difficulty) {
-            Difficulty.EASY -> generateGroups(12, 2)        // 24 cartas
-            Difficulty.MEDIUM -> generateGroups(8, 3)       // 24 cartas
-            Difficulty.HARD -> generateGroups(6, 4)         // 24 cartas
-            Difficulty.EXTREME -> generateExtremeGroups()   // também 24 cartas
+            Difficulty.EASY -> generateGroups(12, 2)      // 12 pares
+            Difficulty.MEDIUM -> generateGroups(8, 3)     // 8 trincas
+            Difficulty.HARD -> generateGroups(6, 4)       // 6 quadras
+            Difficulty.EXTREME -> generateExtremeGroups() // Mistura
         }
 
         cards = symbols.shuffled().mapIndexed { index, symbol -> Card(index, symbol) }
@@ -36,7 +38,8 @@ class GameController(
     private fun groupSize(): Int = when (difficulty) {
         Difficulty.EASY -> 2
         Difficulty.MEDIUM -> 3
-        Difficulty.HARD, Difficulty.EXTREME -> 4
+        Difficulty.HARD -> 4
+        Difficulty.EXTREME -> 1 // para não dividir, já que os grupos são mistos
     }
 
     private fun generateGroups(groupCount: Int, groupSize: Int): List<String> {
@@ -53,8 +56,7 @@ class GameController(
 
     private fun generateExtremeGroups(): List<String> {
         val availableSymbols = ('A'..'Z').iterator()
-        // Nova distribuição: 2 + 2 + 3 + 3 + 4 + 4 + 3 + 3 = 24
-        val groups = listOf(2, 2, 3, 3, 4, 4, 3, 3)
+        val groups = listOf(2, 3, 3, 4, 4, 2) // soma 24
         val list = mutableListOf<String>()
 
         for (groupSize in groups) {
@@ -73,9 +75,10 @@ class GameController(
         card.isRevealed = true
         selectedCards.add(card)
 
-        if (currentPlayer == PlayerType.MACHINE) {
-            memory[card.symbol] = card.id
+        if (mode != GameMode.ZEN) {
+            aiPlayer.observe(card)
         }
+
 
         return true
     }
@@ -108,21 +111,13 @@ class GameController(
     fun isMachineTurn(): Boolean = mode == GameMode.COMPETITIVE && currentPlayer == PlayerType.MACHINE
 
     fun playMachineTurn(): List<Card> {
-        val unrevealed = cards.filter { !it.isRevealed && !it.isMatched }
+        val groupSize = groupSize()
+        val chosen = aiPlayer.chooseCards(cards, groupSize)
+        chosen.forEach { revealCard(it) }
 
-        val knownGroups = memory.entries.groupBy({ it.key }, { it.value })
-            .filter { it.value.size >= groupSize() }
+        aiPlayer.printMemory()
 
-        val selected = when {
-            knownGroups.isNotEmpty() -> {
-                val groupPositions = knownGroups.entries.first().value.take(groupSize())
-                groupPositions.mapNotNull { id -> cards.find { it.id == id } }
-            }
-            else -> unrevealed.shuffled().take(groupSize())
-        }
-
-        selected.forEach { revealCard(it) }
-        return selected
+        return chosen
     }
 
     fun isGameOver(): Boolean = cards.all { it.isMatched }
