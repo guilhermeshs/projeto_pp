@@ -4,7 +4,6 @@ import model.Card
 import model.Difficulty
 import model.GameMode
 import model.PlayerType
-import kotlin.random.Random
 
 class GameController(
     val mode: GameMode,
@@ -25,10 +24,10 @@ class GameController(
 
     init {
         val symbols = when (difficulty) {
-            Difficulty.EASY -> generateGroups(12, 2)      // 12 pares
-            Difficulty.MEDIUM -> generateGroups(8, 3)     // 8 trincas
-            Difficulty.HARD -> generateGroups(6, 4)       // 6 quadras
-            Difficulty.EXTREME -> generateExtremeGroups() // Mistura
+            Difficulty.EASY -> generateGroups(12, 2)        // 24 cartas
+            Difficulty.MEDIUM -> generateGroups(8, 3)       // 24 cartas
+            Difficulty.HARD -> generateGroups(6, 4)         // 24 cartas
+            Difficulty.EXTREME -> generateExtremeGroups()   // também 24 cartas
         }
 
         cards = symbols.shuffled().mapIndexed { index, symbol -> Card(index, symbol) }
@@ -37,8 +36,7 @@ class GameController(
     private fun groupSize(): Int = when (difficulty) {
         Difficulty.EASY -> 2
         Difficulty.MEDIUM -> 3
-        Difficulty.HARD -> 4
-        Difficulty.EXTREME -> 1 // para não dividir, já que os grupos são mistos
+        Difficulty.HARD, Difficulty.EXTREME -> 4
     }
 
     private fun generateGroups(groupCount: Int, groupSize: Int): List<String> {
@@ -55,7 +53,8 @@ class GameController(
 
     private fun generateExtremeGroups(): List<String> {
         val availableSymbols = ('A'..'Z').iterator()
-        val groups = listOf(2, 3, 3, 4, 4, 2) // soma 24
+        // Nova distribuição: 2 + 2 + 3 + 3 + 4 + 4 + 3 + 3 = 24
+        val groups = listOf(2, 2, 3, 3, 4, 4, 3, 3)
         val list = mutableListOf<String>()
 
         for (groupSize in groups) {
@@ -105,8 +104,6 @@ class GameController(
         if (mode == GameMode.ZEN) return
         currentPlayer = if (currentPlayer == PlayerType.HUMAN) PlayerType.MACHINE else PlayerType.HUMAN
     }
-
-
 
     fun isMachineTurn(): Boolean = mode == GameMode.COMPETITIVE && currentPlayer == PlayerType.MACHINE
 

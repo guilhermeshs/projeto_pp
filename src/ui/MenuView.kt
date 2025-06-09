@@ -1,6 +1,7 @@
 package ui
 
 import controller.GameController
+import javafx.application.Platform
 import javafx.geometry.Pos
 import javafx.scene.Scene
 import javafx.scene.control.Button
@@ -17,9 +18,9 @@ class MenuView(private val stage: Stage) : VBox() {
     private val modeSelector = ComboBox<GameMode>()
     private val difficultySelector = ComboBox<Difficulty>()
     private val startButton = Button("Iniciar Jogo")
+    private val exitButton = Button("Sair do Jogo") // NOVO BOTÃO
 
     init {
-
         SoundManager.play("/sounds/menu.mp3")
         spacing = 20.0
         alignment = Pos.CENTER
@@ -31,7 +32,9 @@ class MenuView(private val stage: Stage) : VBox() {
             modeSelector,
             Label("Nível de Dificuldade:"),
             difficultySelector,
+            Label("Opções:"),
             startButton,
+            exitButton,       // ADICIONADO AQUI
             muteButton
         )
 
@@ -50,6 +53,11 @@ class MenuView(private val stage: Stage) : VBox() {
             val scene = Scene(gameView, 1280.0, 720.0)
             scene.stylesheets.add(javaClass.getResource("/style.css")!!.toExternalForm())
             stage.scene = scene
+        }
+
+        // AÇÃO DO BOTÃO DE SAIR
+        exitButton.setOnAction {
+            Platform.exit()
         }
     }
 }
