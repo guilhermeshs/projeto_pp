@@ -14,7 +14,7 @@ class HintManager(private val controller: GameController, difficulty: Difficulty
         "D" to "morango",
         "E" to "melancia",
         "F" to "laranjeira",
-        "G" to "tigeja",
+        "G" to "tigela",
         "H" to "uva",
         "I" to "limão",
         "J" to "manga",
@@ -37,6 +37,11 @@ class HintManager(private val controller: GameController, difficulty: Difficulty
     }
 
     val revealedHints = mutableMapOf<Card, String>()  // Carta e o símbolo revelado
+
+    fun getAllHintedCards(): List<Card> {
+        return revealedHints.keys.toList()
+    }
+
 
     fun useHint(): Boolean {
         if (remainingHints <= 0) {
@@ -71,6 +76,10 @@ class HintManager(private val controller: GameController, difficulty: Difficulty
     }
     fun isHinted(card: Card): Boolean {
         return revealedHints.containsKey(card)
+    }
+
+    fun getHintedCard(): Card? {
+        return revealedHints.keys.lastOrNull()
     }
 
     fun getHintedSymbol(card: Card): String? {

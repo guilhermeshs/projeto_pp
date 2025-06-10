@@ -35,6 +35,8 @@ class GameView(
     private val abandonButton = Button("Abandonar Partida")
     private val hintButton = Button("Pedir Dica")
 
+    private val hintLegendLabel = Label("") // << NOVO
+
     private var gameTimer: GameTimer? = null
 
     init {
@@ -60,7 +62,7 @@ class GameView(
             }
         }
 
-        val topPanel = VBox(10.0, turnLabel, scoreLabel, timeLabel, abandonButton, hintButton, muteButton)
+        val topPanel = VBox(10.0, turnLabel, scoreLabel, timeLabel, abandonButton, hintButton, hintLegendLabel, muteButton) // << MODIFICADO
         topPanel.padding = Insets(10.0)
         top = topPanel
 
@@ -208,6 +210,21 @@ class GameView(
 
             button.isDisable = card.isMatched
         }
+
+        // << NOVO: legenda da dica
+        val allHints = controller.hintManager.getAllHintedCards()
+        if (allHints.isNotEmpty()) {
+            val fruitNames = allHints.mapNotNull { card ->
+                controller.hintManager.getHintedSymbol(card)?.let { symbol ->
+                    controller.hintManager.symbolToFruit[symbol]
+                }
+            }
+            hintLegendLabel.text = "💡 Cartas douradas: ${fruitNames.joinToString(", ")}"
+        } else {
+            hintLegendLabel.text = ""
+        }
+
+
 
         updateLabels()
         checkGameEnd()
