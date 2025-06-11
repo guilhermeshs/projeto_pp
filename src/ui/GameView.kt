@@ -223,7 +223,7 @@ class GameView(
             }
 
             // Aplicar borda de carta especial (somente se revelada ou combinada, e se foi o humano que revelou)
-            if ((card.isRevealed || card.isMatched) && controller.currentPlayer == PlayerType.HUMAN) {
+            if ((card.isRevealed && !card.isMatched)) { //&& controller.currentPlayer == PlayerType.HUMAN)
                 when (card.specialType) {
                     SpecialType.REVELADORA -> button.styleClass.add("card-reveladora")
                     SpecialType.CONGELANTE -> button.styleClass.add("card-congelante")

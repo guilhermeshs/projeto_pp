@@ -16,7 +16,7 @@ class GameController(
     val cards: List<Card>
     private val selectedCards = mutableListOf<Card>()
     private val aiPlayer = AIPlayer(difficulty)
-    lateinit var hintManager: HintManager
+    var hintManager: HintManager
 
     var currentPlayer = PlayerType.HUMAN
         private set
@@ -63,7 +63,12 @@ class GameController(
             }
 
             GameMode.COOPERATIVE -> {
-                val armadilhaCount = 2
+
+                var armadilhaCount = 1
+
+                if(difficulty == Difficulty.EASY){
+                    armadilhaCount = 2
+                }
 
                 cards.filter { it.specialType == SpecialType.NONE }
                     .shuffled(rng)
@@ -121,22 +126,10 @@ class GameController(
         if (mode != GameMode.ZEN) {
             aiPlayer.observe(card)
         }
-        // Efeito: Carta Reveladora (somente se jogador for humano)
-        if (currentPlayer == PlayerType.HUMAN &&
-            card.specialType == SpecialType.REVELADORA &&
-            mode == GameMode.COMPETITIVE
-        ) {
-            // Destacar todas as cartas com o mesmo símbolo (efeito visual via GameView)
-            highlightMatchingCards(card.symbol)
-        }
 
         return true
     }
 
-
-    fun highlightMatchingCards(symbol: String): List<Card> {
-        return cards.filter { it.symbol == symbol && !it.isMatched }
-    }
 
 
     fun shouldHideCards(): Boolean = selectedCards.size == groupSize()

@@ -23,19 +23,35 @@ class AIPlayer(difficulty: Difficulty) {
 
     fun chooseCards(board: List<Card>, groupSize: Int): List<Card> {
         val grouped = memory.groupBy { it.symbol }
+
+        // Verifica se a IA conhece um grupo completo
         val match = grouped.values.firstOrNull { group ->
             group.size >= groupSize && group.all { !it.isMatched && !it.isRevealed }
         }
 
         return if (match != null) {
+            // IA conhece todas as cartas de um grupo → joga
             match.take(groupSize)
         } else {
-            // fallback aleatório
-            board.filter { !it.isMatched && !it.isRevealed }
-                .shuffled()
-                .take(groupSize)
+            // IA não conhece grupo completo → vira apenas cartas que ela não conhece ainda
+            val unknownCards = board.filter { card ->
+                !card.isMatched &&
+                        !card.isRevealed &&
+                        memory.none { it.id == card.id }
+            }
+
+            // fallback: se não houver suficientes desconhecidas, completa aleatoriamente
+            if (unknownCards.size >= groupSize) {
+                unknownCards.shuffled().take(groupSize)
+            } else {
+                // fallback seguro: evita cartas reveladas e já combinadas
+                board.filter { !it.isMatched && !it.isRevealed }
+                    .shuffled()
+                    .take(groupSize)
+            }
         }
     }
+
 
     fun printMemory() {
         if (memory.isEmpty()) {
