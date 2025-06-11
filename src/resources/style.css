@@ -65,3 +65,19 @@
     -fx-border-width: 3;
 }
 
+.card-reveladora {
+    -fx-border-color: purple;
+    -fx-border-width: 3;
+}
+
+.card-congelante {
+    -fx-border-color: cyan;
+    -fx-border-width: 3;
+}
+
+.card-armadilha {
+    -fx-border-color: black;
+    -fx-border-width: 3;
+}
+
+

@@ -4,6 +4,7 @@ import model.Card
 import model.Difficulty
 import javafx.scene.control.Alert
 import kotlin.random.Random
+import model.SpecialType
 
 class HintManager(private val controller: GameController, difficulty: Difficulty) {
 

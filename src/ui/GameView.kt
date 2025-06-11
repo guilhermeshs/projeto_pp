@@ -19,6 +19,7 @@ import model.PlayerType
 import controller.GameTimer
 import controller.SoundManager
 import util.createStyledScene
+import model.SpecialType
 
 class GameView(
     private val controller: GameController,
@@ -171,7 +172,14 @@ class GameView(
     }
 
     private fun updateView() {
+
+
+        val reveladoraAtiva = controller.cards.find {
+            it.specialType == SpecialType.REVELADORA && it.isRevealed && controller.currentPlayer == PlayerType.HUMAN
+        }
+        val simboloRevelado = reveladoraAtiva?.symbol
         buttons.forEach { (card, button) ->
+            button.styleClass.setAll("card-button")
             if (card.isMatched || card.isRevealed) {
                 val image = loadImageForSymbol(card.symbol)
                 val imageView = ImageView(image).apply {
@@ -181,13 +189,18 @@ class GameView(
                 }
                 button.graphic = imageView
                 button.text = ""
+
             } else {
                 button.graphic = null
                 button.text = "❓"
             }
 
-            button.styleClass.setAll("card-button")
+            if (simboloRevelado != null && card.symbol == simboloRevelado && !card.isMatched) {
+                button.styleClass.add("card-reveladora")
+            }
 
+
+            // Borda de jogador (matched)
             when (card.isMatchedBy) {
                 PlayerType.HUMAN -> {
                     if (controller.mode == GameMode.COOPERATIVE)
@@ -204,14 +217,26 @@ class GameView(
                 else -> {}
             }
 
+            // Aplicar estilo da dica (borda dourada)
             if (controller.hintManager.isHinted(card)) {
                 button.styleClass.add("hint-border")
             }
 
+            // Aplicar borda de carta especial (somente se revelada ou combinada, e se foi o humano que revelou)
+            if ((card.isRevealed || card.isMatched) && controller.currentPlayer == PlayerType.HUMAN) {
+                when (card.specialType) {
+                    SpecialType.REVELADORA -> button.styleClass.add("card-reveladora")
+                    SpecialType.CONGELANTE -> button.styleClass.add("card-congelante")
+                    SpecialType.ARMADILHA -> button.styleClass.add("card-armadilha")
+                    else -> {}
+                }
+            }
+
+            // Desabilita botão se carta estiver combinada
             button.isDisable = card.isMatched
         }
 
-        // << NOVO: legenda da dica
+        // Atualiza legenda das dicas
         val allHints = controller.hintManager.getAllHintedCards()
         if (allHints.isNotEmpty()) {
             val fruitNames = allHints.mapNotNull { card ->
@@ -224,11 +249,10 @@ class GameView(
             hintLegendLabel.text = ""
         }
 
-
-
         updateLabels()
         checkGameEnd()
     }
+
 
     private fun loadImageForSymbol(symbol: String): Image {
         val path = "/images/${symbol.lowercase()}.png"
