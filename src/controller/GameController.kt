@@ -15,17 +15,30 @@ class GameController(
     var iaDesativada = false
     val cards: List<Card>
     private val selectedCards = mutableListOf<Card>()
-    private val aiPlayer = AIPlayer(difficulty)
+    private val aiPlayer = AIPlayer(difficulty, mode)
     var hintManager: HintManager
 
     var currentPlayer = PlayerType.HUMAN
         private set
 
     val humanScore: Int
-        get() = cards.count { it.isMatchedBy == PlayerType.HUMAN } / groupSize()
+        get() = calculateScore(PlayerType.HUMAN)
 
     val machineScore: Int
-        get() = cards.count { it.isMatchedBy == PlayerType.MACHINE } / groupSize()
+        get() = calculateScore(PlayerType.MACHINE)
+
+    private fun calculateScore(player: PlayerType): Int {
+        val matchedCards = cards.filter { it.isMatchedBy == player }
+        val groupCounts = matchedCards.groupBy { it.symbol }.values.map { it.size }
+
+        return when (difficulty) {
+            Difficulty.EASY -> groupCounts.size  // 1 ponto por par encontrado
+            Difficulty.MEDIUM -> groupCounts.count { it >= 3 } * 2
+            Difficulty.HARD -> groupCounts.count { it >= 4 } * 3
+            Difficulty.EXTREME -> groupCounts.count { it >= 2 } * 4  // qualquer grupo com 2 ou mais
+        }
+    }
+
 
     init {
         val symbols = when (difficulty) {

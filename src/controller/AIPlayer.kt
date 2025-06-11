@@ -2,16 +2,21 @@ package controller
 
 import model.Card
 import model.Difficulty
+import model.GameMode
 import kotlin.random.Random
 
-class AIPlayer(difficulty: Difficulty) {
+class AIPlayer(
+    difficulty: Difficulty,
+    gameMode: GameMode
+) {
 
     private val memorySize = when (difficulty) {
-        Difficulty.EASY -> 3     // 1 jogada = 2 cartas
-        Difficulty.MEDIUM -> 6   // 3 jogadas = 6 cartas
-        Difficulty.HARD -> Int.MAX_VALUE // SUPER INTELIGENTE.
-        Difficulty.EXTREME -> 8  // opcional: IA mais caótica
+        Difficulty.EASY -> if (gameMode == GameMode.COOPERATIVE) 6 else 3
+        Difficulty.MEDIUM -> if (gameMode == GameMode.COOPERATIVE) 12 else 9
+        Difficulty.HARD -> Int.MAX_VALUE
+        Difficulty.EXTREME -> Int.MAX_VALUE
     }
+
 
     private val memory = mutableListOf<Card>()
 
@@ -81,6 +86,22 @@ class AIPlayer(difficulty: Difficulty) {
             println("  Fruta '$fruta' -> Cartas com IDs: $ids")
         }
     }
+
+    /*fun chooseCards(board: List<Card>, groupSize: Int): List<Card> {
+        val grouped = memory.groupBy { it.symbol }
+        val match = grouped.values.firstOrNull { group ->
+            group.size >= groupSize && group.all { !it.isMatched && !it.isRevealed }
+        }
+
+        return if (match != null) {
+            match.take(groupSize)
+        } else {
+            // fallback aleatório
+            board.filter { !it.isMatched && !it.isRevealed }
+                .shuffled()
+                .take(groupSize)
+        }
+    }*/
 
 
 }
