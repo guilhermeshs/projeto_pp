@@ -15,7 +15,7 @@ class RankingView : BorderPane() {
     init {
         padding = Insets(20.0)
         val coopRanking = DatabaseManager.getTop5Aggregated(GameMode.COOPERATIVE)
-        val compRanking = DatabaseManager.getTop5Aggregated(GameMode.COOPERATIVE)
+        val compRanking = DatabaseManager.getTop5Aggregated(GameMode.COMPETITIVE)
 
         val coopBox = createRankingBox("Modo Cooperativo", coopRanking)
         val compBox = createRankingBox("Modo Competitivo", compRanking)
