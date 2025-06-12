@@ -9,7 +9,7 @@ import model.SpecialType
 
 class GameController(
     val mode: GameMode,
-    private val difficulty: Difficulty
+    val difficulty: Difficulty
 ) {
     var iaCongelada = false
     var iaDesativada = false
@@ -64,22 +64,28 @@ class GameController(
                 val reveladoraCount = 1
                 val congelanteCount = 2
 
-                cards.filter { it.specialType == SpecialType.NONE }
-                    .shuffled(rng)
-                    .take(reveladoraCount + congelanteCount)
-                    .forEachIndexed { i, card ->
-                        card.specialType = if (i < reveladoraCount)
-                            SpecialType.REVELADORA
-                        else
-                            SpecialType.CONGELANTE
+                // Primeiro, escolhe 1 carta reveladora aleatória
+                val disponíveis = cards.filter { it.specialType == SpecialType.NONE }.shuffled(rng).toMutableList()
+                val reveladora = disponíveis.removeFirstOrNull()
+                reveladora?.specialType = SpecialType.REVELADORA
+
+                // Agora seleciona 2 cartas com símbolos diferentes para serem congelantes
+                val congelantesSelecionadas = mutableListOf<Card>()
+                val símbolosUsados = mutableSetOf<String>()
+
+                for (card in disponíveis) {
+                    if (card.symbol !in símbolosUsados) {
+                        card.specialType = SpecialType.CONGELANTE
+                        congelantesSelecionadas.add(card)
+                        símbolosUsados.add(card.symbol)
                     }
+                    if (congelantesSelecionadas.size == congelanteCount) break
+                }
             }
 
             GameMode.COOPERATIVE -> {
-
                 var armadilhaCount = 1
-
-                if(difficulty == Difficulty.EASY){
+                if (difficulty == Difficulty.EASY) {
                     armadilhaCount = 2
                 }
 
@@ -95,6 +101,7 @@ class GameController(
         }
     }
 
+// Nenhuma carta especial
 
     private fun groupSize(): Int = when (difficulty) {
         Difficulty.EASY -> 2

@@ -12,13 +12,16 @@ import javafx.stage.Stage
 import model.Difficulty
 import model.GameMode
 import controller.SoundManager
+import ui.RankingView
 
 class MenuView(private val stage: Stage) : VBox() {
 
     private val modeSelector = ComboBox<GameMode>()
     private val difficultySelector = ComboBox<Difficulty>()
     private val startButton = Button("Iniciar Jogo")
-    private val exitButton = Button("Sair do Jogo") // NOVO BOTÃO
+    private val exitButton = Button("Sair do Jogo")
+    private val rankingButton = Button("Ver Ranking")
+
 
     init {
         SoundManager.play("/sounds/menu.mp3")
@@ -34,14 +37,15 @@ class MenuView(private val stage: Stage) : VBox() {
             difficultySelector,
             Label("Opções:"),
             startButton,
-            exitButton,       // ADICIONADO AQUI
+            rankingButton,
+            exitButton,
             muteButton
         )
 
-        modeSelector.items.addAll(GameMode.values())
+        modeSelector.items.addAll(GameMode.entries.toTypedArray())
         modeSelector.selectionModel.selectFirst()
 
-        difficultySelector.items.addAll(Difficulty.values())
+        difficultySelector.items.addAll(Difficulty.entries.toTypedArray())
         difficultySelector.selectionModel.selectFirst()
 
         startButton.setOnAction {
@@ -59,5 +63,13 @@ class MenuView(private val stage: Stage) : VBox() {
         exitButton.setOnAction {
             Platform.exit()
         }
+        rankingButton.setOnAction {
+            val rankingView = RankingView()
+            val rankingStage = Stage()
+            rankingStage.title = "Ranking de Jogadores"
+            rankingStage.scene = Scene(rankingView, 800.0, 600.0)
+            rankingStage.show()
+        }
+
     }
 }

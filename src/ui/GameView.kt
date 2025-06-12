@@ -1,5 +1,11 @@
 package ui
 
+
+import javafx.scene.control.TextInputDialog
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import db.RankingEntry
+import db.DatabaseManager
 import controller.GameController
 import controller.HintManager
 import javafx.application.Platform
@@ -13,13 +19,11 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
-import model.Card
-import model.GameMode
-import model.PlayerType
 import controller.GameTimer
 import controller.SoundManager
+import model.*
 import util.createStyledScene
-import model.SpecialType
+
 
 class GameView(
     private val controller: GameController,
@@ -299,7 +303,46 @@ class GameView(
 
         alert.showAndWait()
 
+        if(controller.mode != GameMode.ZEN){
+            saveRanking()
+        }
+
         val menu = MenuView(stage)
         stage.scene = createStyledScene(menu, 1280.0, 720.0)
     }
+
+    private fun saveRanking() {
+        val nameDialog = TextInputDialog("Jogador").apply {
+            title = "Salvar Ranking"
+            headerText = "Digite seu nome para salvar no ranking"
+            contentText = "Nome:"
+        }
+
+        val result = nameDialog.showAndWait()
+        if (result.isEmpty) return
+
+        val playerName = result.get().take(20) // Limitar tamanho
+
+        val gameResult = when (controller.mode) {
+            GameMode.COMPETITIVE -> when {
+                controller.humanScore > controller.machineScore -> "Vitória"
+                controller.machineScore > controller.humanScore -> "Derrota"
+                else -> "Empate"
+            }
+            GameMode.COOPERATIVE -> "Vitória"
+            GameMode.ZEN -> "Completo"
+        }
+
+        val rankingEntry = RankingEntry(
+            playerName = playerName,
+            score = controller.humanScore,
+            mode = controller.mode,
+            difficulty = controller.difficulty,
+            date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+            result = gameResult
+        )
+
+        DatabaseManager.insertRanking(rankingEntry)
+    }
+
 }
