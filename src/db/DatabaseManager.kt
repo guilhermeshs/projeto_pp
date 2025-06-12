@@ -54,6 +54,7 @@ object DatabaseManager {
             COUNT(*) AS totalGames,
             SUM(CASE WHEN result = 'Vitória' THEN 1 ELSE 0 END) AS victories,
             SUM(CASE WHEN result = 'Derrota' THEN 1 ELSE 0 END) AS defeats,
+            SUM(CASE WHEN result = 'Empate' THEN 1 ELSE 0 END) AS draws,
             AVG(score) AS averageScore,
             (SELECT difficulty FROM ranking r2 
              WHERE r2.playerName = r1.playerName AND r2.mode = ? 
@@ -68,12 +69,12 @@ object DatabaseManager {
         LIMIT 5
     """.trimIndent()
 
-        val stmt: PreparedStatement = connection.prepareStatement(sql)
+        val stmt = connection.prepareStatement(sql)
         stmt.setString(1, mode.name)
         stmt.setString(2, mode.name)
         stmt.setString(3, mode.name)
 
-        val rs: ResultSet = stmt.executeQuery()
+        val rs = stmt.executeQuery()
         while (rs.next()) {
             result.add(
                 AggregatedRankingEntry(
@@ -81,6 +82,8 @@ object DatabaseManager {
                     totalScore = rs.getInt("totalScore"),
                     victories = rs.getInt("victories"),
                     defeats = rs.getInt("defeats"),
+                    draws = rs.getInt("draws"),
+                    totalGames = rs.getInt("totalGames"),
                     averageScore = rs.getDouble("averageScore"),
                     lastDifficulty = Difficulty.valueOf(rs.getString("lastDifficulty")),
                     lastDate = rs.getString("lastDate")
@@ -92,5 +95,4 @@ object DatabaseManager {
         stmt.close()
         return result
     }
-
 }
