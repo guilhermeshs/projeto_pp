@@ -79,10 +79,6 @@ class HintManager(private val controller: GameController, difficulty: Difficulty
         return revealedHints.containsKey(card)
     }
 
-    fun getHintedCard(): Card? {
-        return revealedHints.keys.lastOrNull()
-    }
-
     fun getHintedSymbol(card: Card): String? {
         return revealedHints[card]
     }
@@ -97,4 +93,8 @@ class HintManager(private val controller: GameController, difficulty: Difficulty
     }
 
     fun getRemainingHints(): Int = remainingHints
+
+    fun getHintedCard(): Card? {
+        return revealedHints.keys.lastOrNull()
+    }
 }

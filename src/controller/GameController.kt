@@ -65,19 +65,19 @@ class GameController(
                 val congelanteCount = 2
 
                 // Primeiro, escolhe 1 carta reveladora aleatória
-                val disponíveis = cards.filter { it.specialType == SpecialType.NONE }.shuffled(rng).toMutableList()
-                val reveladora = disponíveis.removeFirstOrNull()
+                val disponiveis = cards.filter { it.specialType == SpecialType.NONE }.shuffled(rng).toMutableList()
+                val reveladora = disponiveis.removeFirstOrNull()
                 reveladora?.specialType = SpecialType.REVELADORA
 
                 // Agora seleciona 2 cartas com símbolos diferentes para serem congelantes
                 val congelantesSelecionadas = mutableListOf<Card>()
-                val símbolosUsados = mutableSetOf<String>()
+                val simbolosUsados = mutableSetOf<String>()
 
-                for (card in disponíveis) {
-                    if (card.symbol !in símbolosUsados) {
+                for (card in disponiveis) {
+                    if (card.symbol !in simbolosUsados) {
                         card.specialType = SpecialType.CONGELANTE
                         congelantesSelecionadas.add(card)
-                        símbolosUsados.add(card.symbol)
+                        simbolosUsados.add(card.symbol)
                     }
                     if (congelantesSelecionadas.size == congelanteCount) break
                 }

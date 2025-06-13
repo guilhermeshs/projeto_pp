@@ -1,4 +1,4 @@
-package ui
+package util
 
 import javafx.scene.control.Button
 import controller.SoundManager

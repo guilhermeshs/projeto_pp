@@ -7,7 +7,6 @@ import java.time.format.DateTimeFormatter
 import db.RankingEntry
 import db.DatabaseManager
 import controller.GameController
-import controller.HintManager
 import javafx.application.Platform
 import javafx.geometry.Insets
 import javafx.scene.control.Alert
@@ -22,6 +21,7 @@ import javafx.stage.Stage
 import controller.GameTimer
 import controller.SoundManager
 import model.*
+import util.createMuteButton
 import util.createStyledScene
 
 
@@ -120,7 +120,7 @@ class GameView(
         updateView()
 
         if (controller.mode == GameMode.COOPERATIVE) {
-            gameTimer = GameTimer(300, timeLabel) {
+            gameTimer = GameTimer(150, timeLabel) {
                 showTimeOverAlert()
             }
             gameTimer?.start()
@@ -226,7 +226,7 @@ class GameView(
                 button.styleClass.add("hint-border")
             }
 
-            // Aplicar borda de carta especial (somente se revelada ou combinada, e se foi o humano que revelou)
+            // Aplicar borda de carta especial
             if ((card.isRevealed && !card.isMatched)) { //&& controller.currentPlayer == PlayerType.HUMAN)
                 when (card.specialType) {
                     SpecialType.REVELADORA -> button.styleClass.add("card-reveladora")

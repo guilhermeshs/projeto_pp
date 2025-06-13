@@ -12,7 +12,7 @@ import javafx.stage.Stage
 import model.Difficulty
 import model.GameMode
 import controller.SoundManager
-import ui.RankingView
+import util.createMuteButton
 
 class MenuView(private val stage: Stage) : VBox() {
 
